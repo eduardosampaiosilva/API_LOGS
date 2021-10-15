@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API_LOGS.Migrations
 {
-    public partial class TableLogEmail : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,10 +10,10 @@ namespace API_LOGS.Migrations
                 name: "LogEmails",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false),
-                    CodAnamnese = table.Column<int>(nullable: false),
-                    CodEmpresa = table.Column<int>(nullable: false),
-                    DataLeitura = table.Column<DateTime>(nullable: false)
+                    Id = table.Column<string>(nullable: false),
+                    EventType = table.Column<string>(nullable: false),
+                    IdExame = table.Column<string>(nullable: false),
+                    IdEmpresa = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {

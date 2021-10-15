@@ -1,20 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace API_LOGS.Model
 {
     public class LogEmail
     {
-        [Key] public Guid Id { get; set; }
+        [Required(ErrorMessage = "O compo {0} é obrigatório")]
+        [Key] public string Id { get; set; }
 
         [Required(ErrorMessage = "O compo {0} é obrigatório")]
-        public int CodAnamnese { get; set; }
+        public string EventType { get; set; }
 
         [Required(ErrorMessage = "O compo {0} é obrigatório")]
-        public int CodEmpresa { get; set; }
+        public string IdExame { get; set; }
 
         [Required(ErrorMessage = "O compo {0} é obrigatório")]
-        public DateTime DataLeitura { get; set; }
+        public string IdEmpresa { get; set; }
 
+    }
+
+    public class Recorde
+    {
+        public string EventSource { get; set; }
     }
 }

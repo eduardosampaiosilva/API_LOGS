@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_LOGS.Model;
+using Newtonsoft.Json;
 
 namespace API_LOGS.Controllers
 {
@@ -29,7 +30,7 @@ namespace API_LOGS.Controllers
 
         // GET: api/LogEmails/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<LogEmail>> GetLogEmail(Guid id)
+        public async Task<ActionResult<LogEmail>> GetLogEmail(string id)
         {
             var logEmail = await _context.LogEmails.FindAsync(id);
 
@@ -45,7 +46,7 @@ namespace API_LOGS.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLogEmail(Guid id, LogEmail logEmail)
+        public async Task<IActionResult> PutLogEmail(string id, LogEmail logEmail)
         {
             if (id != logEmail.Id)
             {
@@ -73,21 +74,43 @@ namespace API_LOGS.Controllers
             return NoContent();
         }
 
-        // POST: api/LogEmails
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<LogEmail>> PostLogEmail(LogEmail logEmail)
+        public async Task<ActionResult<LogEmail>> PostLogEmail(LogEmailSentRecords logEmail)
         {
-            _context.LogEmails.Add(logEmail);
-            await _context.SaveChangesAsync();
+            var logEmailFirst = logEmail.Records.FirstOrDefault();
+            var model = new LogEmail();
+            var message = JsonConvert.DeserializeObject<LogEmailMessage>(logEmailFirst.Sns.Message);
 
-            return CreatedAtAction("GetLogEmail", new { id = logEmail.Id }, logEmail);
+            model.Id = logEmailFirst.Sns.MessageId;
+            model.EventType = message.EventType;
+            model.IdExame = message.Mail.Tags.IdExame;
+            model.IdEmpresa = message.Mail.Tags.IdEmpresa;
+
+            _context.LogEmails.Add(model);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (LogEmailExists(model.Id))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return CreatedAtAction("GetLogEmail", new { id = model.Id }, model);
         }
+
+
 
         // DELETE: api/LogEmails/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<LogEmail>> DeleteLogEmail(Guid id)
+        public async Task<ActionResult<LogEmail>> DeleteLogEmail(string id)
         {
             var logEmail = await _context.LogEmails.FindAsync(id);
             if (logEmail == null)
@@ -101,7 +124,7 @@ namespace API_LOGS.Controllers
             return logEmail;
         }
 
-        private bool LogEmailExists(Guid id)
+        private bool LogEmailExists(string id)
         {
             return _context.LogEmails.Any(e => e.Id == id);
         }
